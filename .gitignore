@@ -1,2 +1,4 @@
 cred/*.json
 env.sh
+__pycache__
+*.pyc
