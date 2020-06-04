@@ -14,7 +14,8 @@ def load_module( module ):
     return __import__(module_path, fromlist=[module])
 
 routes = []
-route_modules = glob.glob( "routes/*.py" )
+dir_path = path.dirname(path.realpath(__file__))
+route_modules = glob.glob( "/".join( [dir_path,"routes/*.py"] ) )
 for rmf in route_modules:
     rmb,_ = path.splitext(rmf)
     _,rmm = path.split(rmb) 
@@ -35,13 +36,20 @@ def start( server_process ):
      )
 
      def callback(message):
+         result = None
          message.ack()
          try:
              payload = json.loads( message.data )
              if "command" in payload and payload['command'] in routes:
-                 routes[payload['command']]( payload['args'] if 'args' in payload else None, server_process )
+                 result = routes[payload['command']]( payload['args'] if 'args' in payload else None, server_process )
          except Exception as e:  # noqa
              print( e )
+         if result == "exit":
+             publisher = pubsub_v1.PublisherClient()
+             topic_path = publisher.topic_path( project_id, "stop-instance-event" )
+             data = u'{"zone":"us-west2-a","label":"name=minecraft-mv"}'
+             data = data.encode("utf-8")
+             publisher.publish(topic_path, data=data)
 
      streaming_pull_future = subscriber.subscribe(
          subscription_path, callback=callback

@@ -48,4 +48,4 @@ def exec( args, server_proc ):
     server_proc.wait()
 
     print( "Server Stopped" )
-    exit()
+    return "exit"
