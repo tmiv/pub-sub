@@ -4,6 +4,7 @@ import glob
 import sys
 from os import path
 from start_server import startup
+import minecraft_status
 
 def load_module( module ):
     module_path = module
@@ -50,6 +51,7 @@ def start( server_process ):
              data = u'{"zone":"us-west2-a","label":"name=minecraft-mv"}'
              data = data.encode("utf-8")
              publisher.publish(topic_path, data=data)
+             minecraft_status.send("stop")
 
      streaming_pull_future = subscriber.subscribe(
          subscription_path, callback=callback

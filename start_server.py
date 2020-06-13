@@ -3,7 +3,9 @@ import os
 import threading
 from routes.backup import exec as backup
 import server_listener as listener
+import server_console as console
 import re
+import minecraft_status
 
 MINECRAFT_BASE = os.getenv('MINECRAFT_BASE')
 
@@ -44,7 +46,8 @@ def check_version():
                     proc.wait()
 
 def launch():
-    proc = subprocess.Popen( [ MINECRAFT_BASE + "/bedrock_server" ], stdin=subprocess.PIPE,
+    minecraft_status.send("start")
+    proc = subprocess.Popen( [ MINECRAFT_BASE + "/bedrock_server" ], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                cwd = MINECRAFT_BASE )
     return proc
 
@@ -58,4 +61,7 @@ if __name__ == "__main__":
     listen_thread = threading.Thread(target=listener.start, args=(process,))
     listen_thread.daemon = True
     listen_thread.start()
+    console_thread = threading.Thread(target=console.start, args=(process,))
+    console_thread.daemon = True
+    console_thread.start()
     listen_thread.join()
